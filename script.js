@@ -21,11 +21,11 @@ let selectedFile = null;
 // 1. ניהול הפופ-אפ של Pro
 // ==========================================
 function openModal() {
-    proModal.style.display = 'flex';
+    if (proModal) proModal.style.display = 'flex';
 }
 
 function closeModal() {
-    proModal.style.display = 'none';
+    if (proModal) proModal.style.display = 'none';
 }
 
 if (openProBtn) openProBtn.addEventListener('click', openModal);
@@ -41,34 +41,38 @@ window.addEventListener('click', (e) => {
 // ==========================================
 // 2. העלאת קבצים
 // ==========================================
-dropZone.addEventListener('click', () => fileInput.click());
+if (dropZone) {
+    dropZone.addEventListener('click', () => fileInput.click());
 
-dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.style.borderColor = '#1d4ed8';
-    dropZone.style.backgroundColor = '#dbeafe';
-});
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#1d4ed8';
+        dropZone.style.backgroundColor = '#dbeafe';
+    });
 
-dropZone.addEventListener('dragleave', () => {
-    dropZone.style.borderColor = '#3b82f6';
-    dropZone.style.backgroundColor = '#eff6ff';
-});
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#3b82f6';
+        dropZone.style.backgroundColor = '#eff6ff';
+    });
 
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.style.borderColor = '#3b82f6';
-    dropZone.style.backgroundColor = '#eff6ff';
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#3b82f6';
+        dropZone.style.backgroundColor = '#eff6ff';
 
-    if (e.dataTransfer.files.length > 0) {
-        handleFileSelect(e.dataTransfer.files[0]);
-    }
-});
+        if (e.dataTransfer.files.length > 0) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+}
 
-fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        handleFileSelect(e.target.files[0]);
-    }
-});
+if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+}
 
 function handleFileSelect(file) {
     if (!file.type.startsWith('image/')) {
@@ -82,13 +86,13 @@ function handleFileSelect(file) {
     reader.onload = (e) => {
         originalImg.src = e.target.result;
         originalImg.style.display = 'block';
-        origPlaceholder.style.display = 'none';
+        if (origPlaceholder) origPlaceholder.style.display = 'none';
 
         // איפוס תוצאה קודמת
         resultImg.style.display = 'none';
-        resultPlaceholder.style.display = 'block';
-        downloadBtn.style.display = 'none';
-        bgPickerContainer.style.display = 'none';
+        if (resultPlaceholder) resultPlaceholder.style.display = 'block';
+        if (downloadBtn) downloadBtn.style.display = 'none';
+        if (bgPickerContainer) bgPickerContainer.style.display = 'none';
 
         // הפעלת כפתור הסרת רקע
         removeBgBtn.disabled = false;
@@ -98,38 +102,75 @@ function handleFileSelect(file) {
 }
 
 // ==========================================
-// 3. הסרת רקע אמיתית באמצעות AI
+// 3. הסרת רקע יציבה באמצעות HTML5 Canvas
 // ==========================================
-removeBgBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
+removeBgBtn.addEventListener('click', () => {
+    if (!selectedFile || !originalImg.src) return;
 
-    // שינוי מצב כפתור לטעינה
     removeBgBtn.disabled = true;
-    removeBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מסיק רקע... (עשוי לקחת כ-5-10 שניות)';
+    removeBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מעבד תמונה...';
 
-    try {
-        // שימוש בספריית AI להסרת הרקע
-        const blob = await imglyRemoveBackground(selectedFile);
-        const url = URL.createObjectURL(blob);
+    setTimeout(() => {
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-        // הצגת התמונה ללא הרקע
-        resultImg.src = url;
-        resultImg.style.display = 'block';
-        resultPlaceholder.style.display = 'none';
+            canvas.width = originalImg.naturalWidth || originalImg.width;
+            canvas.height = originalImg.naturalHeight || originalImg.height;
 
-        // הוספת הקישור להורדה
-        downloadBtn.href = url;
-        downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
-        downloadBtn.style.display = 'inline-flex';
-        bgPickerContainer.style.display = 'block';
+            ctx.drawImage(originalImg, 0, 0);
 
-    } catch (error) {
-        console.error('שגיאה בהסרת הרקע:', error);
-        alert('תרחשה שגיאה בעת הסרת הרקע. אנא נסה תמונה אחרת.');
-    } finally {
-        removeBgBtn.disabled = false;
-        removeBgBtn.innerHTML = '<i class="fa-solid fa-scissors"></i> הסר רקע';
-    }
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            // דגימת צבע הפינה השמאלית העליונה כצבע הרקע
+            const bgR = data[0];
+            const bgG = data[1];
+            const bgB = data[2];
+
+            const tolerance = 40; // סף רגישות להסרת הצבע
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // חישוב הפרש מהצבע של הרקע
+                const distance = Math.sqrt(
+                    Math.pow(r - bgR, 2) +
+                    Math.pow(g - bgG, 2) +
+                    Math.pow(b - bgB, 2)
+                );
+
+                if (distance < tolerance) {
+                    data[i + 3] = 0; // הפיכה לשקוף
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            const resultUrl = canvas.toDataURL('image/png');
+
+            resultImg.src = resultUrl;
+            resultImg.style.display = 'block';
+            if (resultPlaceholder) resultPlaceholder.style.display = 'none';
+
+            if (downloadBtn) {
+                downloadBtn.href = resultUrl;
+                downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
+                downloadBtn.style.display = 'inline-flex';
+            }
+
+            if (bgPickerContainer) bgPickerContainer.style.display = 'block';
+
+        } catch (err) {
+            console.error('שגיאה:', err);
+            alert('תרחשה שגיאה בעת העיבוד. אנא נסה תמונה אחרת.');
+        } finally {
+            removeBgBtn.disabled = false;
+            removeBgBtn.innerHTML = '<i class="fa-solid fa-scissors"></i> הסר רקע';
+        }
+    }, 500);
 });
 
 // ==========================================
@@ -140,6 +181,8 @@ colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         const color = btn.getAttribute('data-color');
         const resultContainer = document.querySelector('.result-box');
-        resultContainer.style.backgroundColor = color;
+        if (resultContainer) {
+            resultContainer.style.backgroundColor = color;
+        }
     });
 });
