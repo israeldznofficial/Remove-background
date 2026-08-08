@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BG Remover Studio Pro</title>
-    <!-- קישור מעודכן ל-CSS עם גרסה עוקפת Cache -->
-    <link rel="stylesheet" href="style.css?v=2.0">
+    <link rel="stylesheet" href="style.css?v=3.0">
     <!-- אייקונים מ-FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ספריית AI להסרת רקע אמיתית בתוך הדפדפן -->
+    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.umd.min.js"></script>
 </head>
 <body>
 
@@ -60,7 +61,7 @@
             <div class="image-box result-box">
                 <span class="badge badge-success">ללא רקע</span>
                 <div class="placeholder-text" id="resultPlaceholder">
-                    <i class="fa-solid fa-sparkles"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span>התוצאה תופיע כאן</span>
                 </div>
                 <img id="resultImg" style="display: none;" alt="תוצאה">
@@ -100,26 +101,26 @@
             <div class="modal-header">
                 <i class="fa-solid fa-crown crown-icon"></i>
                 <h2>שדרג ל-<strong>Studio Pro</strong></h2>
-                <p>קבל גישה לכל הכלים המתקדמים וללא הגבלות</p>
+                <p>קבל גישה לכל הכלים המתקדמים ללא הגבלות</p>
             </div>
             
             <div class="pro-plans single-plan">
                 <div class="plan-card">
-                    <span class="badge-featured">פופולרי ביותר</span>
-                    <h3>מנוי חודשי LITE</h3>
-                    <div class="price">₪19 <span>/ חודש</span></div>
+                    <span class="badge-featured">מבצע מיוחד</span>
+                    <h3>גישה לכל החיים</h3>
+                    <div class="price">₪5 <span>/ לכל החיים</span></div>
                     <ul>
                         <li><i class="fa-solid fa-check"></i> הסרת רקע ללא הגבלה</li>
                         <li><i class="fa-solid fa-check"></i> הורדה באיכות HD מלאה</li>
                         <li><i class="fa-solid fa-check"></i> מעבד תמונות מהיר פי 3</li>
                         <li><i class="fa-solid fa-check"></i> תמיכה בקבצים גדולי ממדים</li>
                     </ul>
-                    <button class="btn-buy">התחל ניסיון חינם</button>
+                    <button class="btn-buy">רכוש עכשיו ב-₪5 בלבד</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=3.0"></script>
 </body>
 </html>
