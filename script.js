@@ -32,7 +32,6 @@ if (openProBtn) openProBtn.addEventListener('click', openModal);
 if (proFeaturesBtn) proFeaturesBtn.addEventListener('click', openModal);
 if (closeProBtn) closeProBtn.addEventListener('click', closeModal);
 
-// סגירה בלחיצה מחוץ לחלון הפופ-אפ
 window.addEventListener('click', (e) => {
     if (e.target === proModal) {
         closeModal();
@@ -40,7 +39,7 @@ window.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 2. העלאת קבצים (גרירה / בלחיצה)
+// 2. העלאת קבצים
 // ==========================================
 dropZone.addEventListener('click', () => fileInput.click());
 
@@ -71,7 +70,6 @@ fileInput.addEventListener('change', (e) => {
     }
 });
 
-// טיפול בקובץ שנבחר
 function handleFileSelect(file) {
     if (!file.type.startsWith('image/')) {
         alert('אנא בחר קובץ תמונה תקין.');
@@ -100,31 +98,38 @@ function handleFileSelect(file) {
 }
 
 // ==========================================
-// 3. הסרת רקע (סימולציה / API)
+// 3. הסרת רקע אמיתית באמצעות AI
 // ==========================================
-removeBgBtn.addEventListener('click', () => {
+removeBgBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
     // שינוי מצב כפתור לטעינה
     removeBgBtn.disabled = true;
-    removeBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מעבד תמונה...';
+    removeBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מסיק רקע... (עשוי לקחת כ-5-10 שניות)';
 
-    // סימולציית עיבוד (כאן ניתן לשלב API אמיתי כמו imgly / remove.bg)
-    setTimeout(() => {
-        // הצגת התמונה המעובדת (כרגע מציג את המקורית לצורך הדגמה)
-        resultImg.src = originalImg.src;
+    try {
+        // שימוש בספריית AI להסרת הרקע
+        const blob = await imglyRemoveBackground(selectedFile);
+        const url = URL.createObjectURL(blob);
+
+        // הצגת התמונה ללא הרקע
+        resultImg.src = url;
         resultImg.style.display = 'block';
         resultPlaceholder.style.display = 'none';
 
-        // הפעלת כפתור הורדה ובחירת צבע
-        downloadBtn.href = originalImg.src;
+        // הוספת הקישור להורדה
+        downloadBtn.href = url;
+        downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
         downloadBtn.style.display = 'inline-flex';
         bgPickerContainer.style.display = 'block';
 
-        // החזרת הכפתור למצבו המקורי
+    } catch (error) {
+        console.error('שגיאה בהסרת הרקע:', error);
+        alert('תרחשה שגיאה בעת הסרת הרקע. אנא נסה תמונה אחרת.');
+    } finally {
         removeBgBtn.disabled = false;
         removeBgBtn.innerHTML = '<i class="fa-solid fa-scissors"></i> הסר רקע';
-    }, 1500);
+    }
 });
 
 // ==========================================
