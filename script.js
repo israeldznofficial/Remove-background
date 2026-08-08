@@ -1,164 +1,140 @@
-const imageInput = document.getElementById('imageInput');
+// האלמנטים ב-DOM
 const dropZone = document.getElementById('dropZone');
-const originalImage = document.getElementById('originalImage');
-const resultImage = document.getElementById('resultImage');
-const resultContainer = document.getElementById('resultContainer');
-const removeBtn = document.getElementById('removeBtn');
+const fileInput = document.getElementById('fileInput');
+const removeBgBtn = document.getElementById('removeBgBtn');
 const downloadBtn = document.getElementById('downloadBtn');
-const downloadHdBtn = document.getElementById('downloadHdBtn');
-const copyBtn = document.getElementById('copyBtn');
-const loader = document.getElementById('loader');
+const originalImg = document.getElementById('originalImg');
+const resultImg = document.getElementById('resultImg');
 const origPlaceholder = document.getElementById('origPlaceholder');
 const resultPlaceholder = document.getElementById('resultPlaceholder');
-const bgPickerSection = document.getElementById('bgPickerSection');
-const colorBtns = document.querySelectorAll('.color-btn');
+const bgPickerContainer = document.getElementById('bgPickerContainer');
 
-// אלמנטים של Modal Pro
-const proModal = document.getElementById('proModal');
+// כפתורי Pro
 const openProBtn = document.getElementById('openProBtn');
+const proFeaturesBtn = document.getElementById('proFeaturesBtn');
 const closeProBtn = document.getElementById('closeProBtn');
-
-const API_KEY = 'AbN3eMM4pZzE3b2VrBir4vBb';
+const proModal = document.getElementById('proModal');
 
 let selectedFile = null;
-let processedBlob = null;
 
-// פתיחה/סגירה של חלון Pro
-openProBtn.addEventListener('click', () => proModal.style.display = 'flex');
-downloadHdBtn.addEventListener('click', () => proModal.style.display = 'flex');
-closeProBtn.addEventListener('click', () => proModal.style.display = 'none');
+// ==========================================
+// 1. ניהול הפופ-אפ של Pro
+// ==========================================
+function openModal() {
+    proModal.style.display = 'flex';
+}
 
+function closeModal() {
+    proModal.style.display = 'none';
+}
+
+if (openProBtn) openProBtn.addEventListener('click', openModal);
+if (proFeaturesBtn) proFeaturesBtn.addEventListener('click', openModal);
+if (closeProBtn) closeProBtn.addEventListener('click', closeModal);
+
+// סגירה בלחיצה מחוץ לחלון הפופ-אפ
 window.addEventListener('click', (e) => {
-    if (e.target === proModal) proModal.style.display = 'none';
+    if (e.target === proModal) {
+        closeModal();
+    }
 });
 
-// גרירת קבצים
-dropZone.addEventListener('click', () => imageInput.click());
+// ==========================================
+// 2. העלאת קבצים (גרירה / בלחיצה)
+// ==========================================
+dropZone.addEventListener('click', () => fileInput.click());
 
-['dragenter', 'dragover'].forEach(name => {
-    dropZone.addEventListener(name, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#1d4ed8';
+    dropZone.style.backgroundColor = '#dbeafe';
 });
 
-['dragleave', 'drop'].forEach(name => {
-    dropZone.addEventListener(name, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-    });
+dropZone.addEventListener('dragleave', () => {
+    dropZone.style.borderColor = '#3b82f6';
+    dropZone.style.backgroundColor = '#eff6ff';
 });
 
 dropZone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files.length) handleFile(files[0]);
-});
+    e.preventDefault();
+    dropZone.style.borderColor = '#3b82f6';
+    dropZone.style.backgroundColor = '#eff6ff';
 
-// Ctrl+V להדבקה
-document.addEventListener('paste', (e) => {
-    const items = e.clipboardData.items;
-    for (let item of items) {
-        if (item.type.indexOf('image') !== -1) {
-            const blob = item.getAsFile();
-            handleFile(blob);
-            break;
-        }
+    if (e.dataTransfer.files.length > 0) {
+        handleFileSelect(e.dataTransfer.files[0]);
     }
 });
 
-imageInput.addEventListener('change', (e) => {
-    handleFile(e.target.files[0]);
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+    }
 });
 
-function handleFile(file) {
-    if (file && file.type.startsWith('image/')) {
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            originalImage.src = e.target.result;
-            originalImage.style.display = 'block';
-            origPlaceholder.style.display = 'none';
-
-            resultImage.style.display = 'none';
-            resultPlaceholder.style.display = 'block';
-            bgPickerSection.style.display = 'none';
-            downloadBtn.style.display = 'none';
-            downloadHdBtn.style.display = 'none';
-            copyBtn.style.display = 'none';
-            removeBtn.disabled = false;
-        };
-        reader.readAsDataURL(file);
+// טיפול בקובץ שנבחר
+function handleFileSelect(file) {
+    if (!file.type.startsWith('image/')) {
+        alert('אנא בחר קובץ תמונה תקין.');
+        return;
     }
+
+    selectedFile = file;
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        originalImg.src = e.target.result;
+        originalImg.style.display = 'block';
+        origPlaceholder.style.display = 'none';
+
+        // איפוס תוצאה קודמת
+        resultImg.style.display = 'none';
+        resultPlaceholder.style.display = 'block';
+        downloadBtn.style.display = 'none';
+        bgPickerContainer.style.display = 'none';
+
+        // הפעלת כפתור הסרת רקע
+        removeBgBtn.disabled = false;
+    };
+
+    reader.readAsDataURL(file);
 }
 
-removeBtn.addEventListener('click', async () => {
+// ==========================================
+// 3. הסרת רקע (סימולציה / API)
+// ==========================================
+removeBgBtn.addEventListener('click', () => {
     if (!selectedFile) return;
 
-    loader.style.display = 'flex';
-    resultPlaceholder.style.display = 'none';
-    resultImage.style.display = 'none';
-    removeBtn.disabled = true;
+    // שינוי מצב כפתור לטעינה
+    removeBgBtn.disabled = true;
+    removeBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מעבד תמונה...';
 
-    const formData = new FormData();
-    formData.append('image_file', selectedFile);
-    formData.append('size', 'auto');
+    // סימולציית עיבוד (כאן ניתן לשלב API אמיתי כמו imgly / remove.bg)
+    setTimeout(() => {
+        // הצגת התמונה המעובדת (כרגע מציג את המקורית לצורך הדגמה)
+        resultImg.src = originalImg.src;
+        resultImg.style.display = 'block';
+        resultPlaceholder.style.display = 'none';
 
-    try {
-        const response = await fetch('https://api.remove.bg/v1.0/removebg', {
-            method: 'POST',
-            headers: { 'X-Api-Key': API_KEY },
-            body: formData
-        });
-
-        if (!response.ok) throw new Error('שגיאה בעיבוד');
-
-        processedBlob = await response.blob();
-        const url = URL.createObjectURL(processedBlob);
-
-        resultImage.src = url;
-        resultImage.style.display = 'block';
-
-        bgPickerSection.style.display = 'block';
-        downloadBtn.href = url;
-        downloadBtn.download = 'no-bg.png';
+        // הפעלת כפתור הורדה ובחירת צבע
+        downloadBtn.href = originalImg.src;
         downloadBtn.style.display = 'inline-flex';
-        downloadHdBtn.style.display = 'inline-flex';
-        copyBtn.style.display = 'inline-flex';
-    } catch (error) {
-        alert('אירעה שגיאה בעת הסרת הרקע.');
-        resultPlaceholder.style.display = 'block';
-    } finally {
-        loader.style.display = 'none';
-        removeBtn.disabled = false;
-    }
+        bgPickerContainer.style.display = 'block';
+
+        // החזרת הכפתור למצבו המקורי
+        removeBgBtn.disabled = false;
+        removeBgBtn.innerHTML = '<i class="fa-solid fa-scissors"></i> הסר רקע';
+    }, 1500);
 });
 
-// שינוי צבע
+// ==========================================
+// 4. שינוי צבע רקע לתוצאה
+// ==========================================
+const colorBtns = document.querySelectorAll('.color-btn');
 colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        colorBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         const color = btn.getAttribute('data-color');
-
-        if (color === 'transparent') {
-            resultContainer.style.backgroundColor = '';
-            resultContainer.classList.add('result-box');
-        } else {
-            resultContainer.classList.remove('result-box');
-            resultContainer.style.backgroundColor = color;
-        }
+        const resultContainer = document.querySelector('.result-box');
+        resultContainer.style.backgroundColor = color;
     });
-});
-
-// העתקה ללוח
-copyBtn.addEventListener('click', async () => {
-    if (!processedBlob) return;
-    try {
-        await navigator.clipboard.write([
-            new ClipboardItem({ [processedBlob.type]: processedBlob })
-        ]);
-        alert('התמונה הועתקה ללוח!');
-    } catch (err) {
-        alert('לא ניתן להעתיק את התמונה בדפדפן זה.');
-    }
 });
