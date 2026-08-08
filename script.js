@@ -1,195 +1,164 @@
+const imageInput = document.getElementById('imageInput');
 const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-const removeBgBtn = document.getElementById('removeBgBtn');
+const originalImage = document.getElementById('originalImage');
+const resultImage = document.getElementById('resultImage');
+const resultContainer = document.getElementById('resultContainer');
+const removeBtn = document.getElementById('removeBtn');
 const downloadBtn = document.getElementById('downloadBtn');
-const originalImg = document.getElementById('originalImg');
-const resultImg = document.getElementById('resultImg');
+const downloadHdBtn = document.getElementById('downloadHdBtn');
+const copyBtn = document.getElementById('copyBtn');
+const loader = document.getElementById('loader');
 const origPlaceholder = document.getElementById('origPlaceholder');
 const resultPlaceholder = document.getElementById('resultPlaceholder');
-const bgPickerContainer = document.getElementById('bgPickerContainer');
+const bgPickerSection = document.getElementById('bgPickerSection');
+const colorBtns = document.querySelectorAll('.color-btn');
 
-const openProBtn = document.getElementById('openProBtn');
-const proFeaturesBtn = document.getElementById('proFeaturesBtn');
-const closeProBtn = document.getElementById('closeProBtn');
+// אלמנטים של Modal Pro
 const proModal = document.getElementById('proModal');
+const openProBtn = document.getElementById('openProBtn');
+const closeProBtn = document.getElementById('closeProBtn');
+
+const API_KEY = 'AbN3eMM4pZzE3b2VrBir4vBb';
 
 let selectedFile = null;
+let processedBlob = null;
 
-// ==========================================
-// 1. ניהול הפופ-אפ של Pro
-// ==========================================
-function openModal() { if (proModal) proModal.style.display = 'flex'; }
-function closeModal() { if (proModal) proModal.style.display = 'none'; }
-
-if (openProBtn) openProBtn.addEventListener('click', openModal);
-if (proFeaturesBtn) proFeaturesBtn.addEventListener('click', openModal);
-if (closeProBtn) closeProBtn.addEventListener('click', closeModal);
+// פתיחה/סגירה של חלון Pro
+openProBtn.addEventListener('click', () => proModal.style.display = 'flex');
+downloadHdBtn.addEventListener('click', () => proModal.style.display = 'flex');
+closeProBtn.addEventListener('click', () => proModal.style.display = 'none');
 
 window.addEventListener('click', (e) => {
-    if (e.target === proModal) closeModal();
+    if (e.target === proModal) proModal.style.display = 'none';
 });
 
-// ==========================================
-// 2. העלאת קבצים (גרירה / בחירה / הדבקה)
-// ==========================================
-if (dropZone) {
-    dropZone.addEventListener('click', () => fileInput.click());
+// גרירת קבצים
+dropZone.addEventListener('click', () => imageInput.click());
 
-    dropZone.addEventListener('dragover', (e) => {
+['dragenter', 'dragover'].forEach(name => {
+    dropZone.addEventListener(name, (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = '#1d4ed8';
-        dropZone.style.backgroundColor = '#dbeafe';
+        dropZone.classList.add('drag-over');
     });
+});
 
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.style.borderColor = '#3b82f6';
-        dropZone.style.backgroundColor = '#eff6ff';
-    });
-
-    dropZone.addEventListener('drop', (e) => {
+['dragleave', 'drop'].forEach(name => {
+    dropZone.addEventListener(name, (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = '#3b82f6';
-        dropZone.style.backgroundColor = '#eff6ff';
-        if (e.dataTransfer.files.length > 0) {
-            handleFileSelect(e.dataTransfer.files[0]);
-        }
+        dropZone.classList.remove('drag-over');
     });
-}
+});
 
-if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFileSelect(e.target.files[0]);
-        }
-    });
-}
+dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length) handleFile(files[0]);
+});
 
-// הדבקת תמונה בלחיצת Ctrl+V
+// Ctrl+V להדבקה
 document.addEventListener('paste', (e) => {
     const items = e.clipboardData.items;
     for (let item of items) {
         if (item.type.indexOf('image') !== -1) {
             const blob = item.getAsFile();
-            handleFileSelect(blob);
+            handleFile(blob);
             break;
         }
     }
 });
 
-function handleFileSelect(file) {
-    if (!file.type.startsWith('image/')) {
-        alert('אנא בחר קובץ תמונה תקין.');
-        return;
+imageInput.addEventListener('change', (e) => {
+    handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+    if (file && file.type.startsWith('image/')) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            originalImage.src = e.target.result;
+            originalImage.style.display = 'block';
+            origPlaceholder.style.display = 'none';
+
+            resultImage.style.display = 'none';
+            resultPlaceholder.style.display = 'block';
+            bgPickerSection.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            downloadHdBtn.style.display = 'none';
+            copyBtn.style.display = 'none';
+            removeBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
     }
-
-    selectedFile = file;
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        originalImg.src = e.target.result;
-        originalImg.style.display = 'block';
-        if (origPlaceholder) origPlaceholder.style.display = 'none';
-
-        resultImg.style.display = 'none';
-        if (resultPlaceholder) resultPlaceholder.style.display = 'block';
-        if (downloadBtn) downloadBtn.style.display = 'none';
-        if (bgPickerContainer) bgPickerContainer.style.display = 'none';
-
-        removeBgBtn.disabled = false;
-    };
-
-    reader.readAsDataURL(file);
 }
 
-// ==========================================
-// 3. הסרת רקע ב-AI (מנוע AI איכותי ב-100%)
-// ==========================================
-removeBgBtn.addEventListener('click', async () => {
-    if (!selectedFile || !originalImg.src) return;
+removeBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
 
-    removeBgBtn.disabled = true;
-    removeBgBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מעבד ב-AI מקצועי...';
+    loader.style.display = 'flex';
+    resultPlaceholder.style.display = 'none';
+    resultImage.style.display = 'none';
+    removeBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('image_file', selectedFile);
+    formData.append('size', 'auto');
 
     try {
-        const formData = new FormData();
-        formData.append('image_file', selectedFile);
-
-        // שליחה לשרת AI חינמי שמבצע הסרת רקע מושלמת מדויקת
         const response = await fetch('https://api.remove.bg/v1.0/removebg', {
             method: 'POST',
-            headers: {
-                // מפתח API חינמי ופתוח לשימוש
-                'X-Api-Key': 'd9e03d98-3168-45e0-8278-8ba94a53018e' 
-            },
+            headers: { 'X-Api-Key': API_KEY },
             body: formData
         });
 
-        if (!response.ok) {
-            // במידה והשרת עמוס, נריץ מודל AI חלופי דרך Hugging Face
-            throw new Error('Fallback to secondary AI engine');
-        }
+        if (!response.ok) throw new Error('שגיאה בעיבוד');
 
-        const blob = await response.blob();
-        displayResult(blob);
+        processedBlob = await response.blob();
+        const url = URL.createObjectURL(processedBlob);
 
-    } catch (primaryError) {
-        console.warn('Primary AI API failed, switching to Hugging Face AI...', primaryError);
+        resultImage.src = url;
+        resultImage.style.display = 'block';
 
-        try {
-            // מנוע AI חלופי (Hugging Face RMBG-1.4 - מודל AI עוצמתי להסרת רקע)
-            const response = await fetch('https://briaai-rmbg-1-4.hf.space/api/predict', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    data: [originalImg.src]
-                })
-            });
-
-            const data = await response.json();
-            if (data && data.data && data.data[0]) {
-                const res = await fetch(data.data[0]);
-                const blob = await res.blob();
-                displayResult(blob);
-            } else {
-                throw new Error('HF Engine Failed');
-            }
-        } catch (secondaryError) {
-            console.error('Secondary AI Error:', secondaryError);
-            alert('אירעה שגיאה בחיבור לשרת ה-AI. אנא נסה שוב בעוד כמה שניות.');
-        }
+        bgPickerSection.style.display = 'block';
+        downloadBtn.href = url;
+        downloadBtn.download = 'no-bg.png';
+        downloadBtn.style.display = 'inline-flex';
+        downloadHdBtn.style.display = 'inline-flex';
+        copyBtn.style.display = 'inline-flex';
+    } catch (error) {
+        alert('אירעה שגיאה בעת הסרת הרקע.');
+        resultPlaceholder.style.display = 'block';
     } finally {
-        removeBgBtn.disabled = false;
-        removeBgBtn.innerHTML = '<i class="fa-solid fa-scissors"></i> הסר רקע';
+        loader.style.display = 'none';
+        removeBtn.disabled = false;
     }
 });
 
-// הצגת תוצאת ה-AI בתוך העמוד
-function displayResult(blob) {
-    const resultUrl = URL.createObjectURL(blob);
-
-    resultImg.src = resultUrl;
-    resultImg.style.display = 'block';
-    if (resultPlaceholder) resultPlaceholder.style.display = 'none';
-
-    if (downloadBtn) {
-        downloadBtn.href = resultUrl;
-        downloadBtn.download = `no-bg-${selectedFile.name ? selectedFile.name.split('.')[0] : 'image'}.png`;
-        downloadBtn.style.display = 'inline-flex';
-    }
-
-    if (bgPickerContainer) bgPickerContainer.style.display = 'block';
-}
-
-// ==========================================
-// 4. בחירת צבע רקע חדש
-// ==========================================
-const colorBtns = document.querySelectorAll('.color-btn');
+// שינוי צבע
 colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+        colorBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         const color = btn.getAttribute('data-color');
-        const resultContainer = document.querySelector('.result-box');
-        if (resultContainer) {
+
+        if (color === 'transparent') {
+            resultContainer.style.backgroundColor = '';
+            resultContainer.classList.add('result-box');
+        } else {
+            resultContainer.classList.remove('result-box');
             resultContainer.style.backgroundColor = color;
         }
     });
+});
+
+// העתקה ללוח
+copyBtn.addEventListener('click', async () => {
+    if (!processedBlob) return;
+    try {
+        await navigator.clipboard.write([
+            new ClipboardItem({ [processedBlob.type]: processedBlob })
+        ]);
+        alert('התמונה הועתקה ללוח!');
+    } catch (err) {
+        alert('לא ניתן להעתיק את התמונה בדפדפן זה.');
+    }
 });
