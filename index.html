@@ -4,50 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BG Remover Studio Pro</title>
-    <link rel="stylesheet" href="style.css?v=3.0">
-    <!-- אייקונים מ-FontAwesome -->
+    <link rel="stylesheet" href="style.css?v=4.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- ספריית AI להסרת רקע אמיתית בתוך הדפדפן -->
-    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.umd.min.js"></script>
 </head>
 <body>
 
-    <!-- צורות רקע זוהרות -->
     <div class="bg-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
     </div>
 
-    <!-- הקונטיינר המרכזי -->
     <div class="container">
         
-        <!-- סרגל עליון עם כפתור שדרוג -->
         <div class="top-bar">
             <button class="pro-badge-btn" id="openProBtn">
                 <i class="fa-solid fa-crown"></i> שדרג ל-Pro
             </button>
         </div>
 
-        <!-- כותרת ראשית -->
         <header>
             <div class="logo-icon">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
             </div>
-            <h1>הסרת רקע מתמונות בחינם</h1>
-            <p>העלה תמונה ותקבל תוצאה שקופה ומקצועית תוך שניות בודדות</p>
+            <h1>BG Remover Studio</h1>
+            <p>הסר רקע והוסף רקע חדש בלחיצת כפתור (אפשר גם ללחץ Ctrl+V להדבקה)</p>
         </header>
 
-        <!-- אזור העלאת התמונה -->
         <div class="drop-zone" id="dropZone">
             <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-            <div class="drop-title">גרור ושחרר תמונה כאן או <span class="highlight">לחץ לבחירה</span></div>
-            <div class="drop-sub">תומך ב-PNG, JPG, WEBP (עד 10MB)</div>
+            <div class="drop-title">גרור תמונה לכאן, לחץ לבחירה או לחץ <span class="highlight">Ctrl + V</span></div>
+            <div class="drop-sub">תומך ב-PNG, JPG, WEBP</div>
             <input type="file" id="fileInput" accept="image/*" style="display: none;">
         </div>
 
-        <!-- תצוגה מקדימה -->
         <div class="preview-container">
-            <!-- תמונה מקורית -->
             <div class="image-box">
                 <span class="badge">מקור</span>
                 <div class="placeholder-text" id="origPlaceholder">
@@ -57,18 +47,16 @@
                 <img id="originalImg" style="display: none;" alt="מקור">
             </div>
 
-            <!-- תוצאה -->
             <div class="image-box result-box">
-                <span class="badge badge-success">ללא רקע</span>
+                <span class="badge badge-success">תוצאה</span>
                 <div class="placeholder-text" id="resultPlaceholder">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>התוצאה תופיע כאן</span>
+                    <span>התוצאה ללא הרקע תופיע כאן</span>
                 </div>
                 <img id="resultImg" style="display: none;" alt="תוצאה">
             </div>
         </div>
 
-        <!-- בחירת צבע רקע חלופי -->
         <div class="bg-picker-container" id="bgPickerContainer" style="display: none;">
             <span>בחר צבע רקע חדש (אופציונלי):</span>
             <div class="color-options">
@@ -80,7 +68,6 @@
             </div>
         </div>
 
-        <!-- כפתורי פעולה -->
         <div class="actions">
             <button class="btn btn-primary" id="removeBgBtn" disabled>
                 <i class="fa-solid fa-scissors"></i> הסר רקע
@@ -94,7 +81,6 @@
         </div>
     </div>
 
-    <!-- פופאפ שדרוג Pro Modal -->
     <div class="modal-overlay" id="proModal" style="display: none;">
         <div class="modal-content">
             <button class="close-modal" id="closeProBtn">&times;</button>
@@ -121,6 +107,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=3.0"></script>
+    <script src="script.js?v=4.0"></script>
 </body>
 </html>
