@@ -4,123 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BG Remover Studio Pro</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- קישור מעודכן ל-CSS עם גרסה עוקפת Cache -->
+    <link rel="stylesheet" href="style.css?v=2.0">
+    <!-- אייקונים מ-FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- אלמנטים צפים ברקע -->
+    <!-- צורות רקע זוהרות -->
     <div class="bg-shapes">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
     </div>
 
+    <!-- הקונטיינר המרכזי -->
     <div class="container">
-        <!-- כפתור שדרוג בראש הדף -->
+        
+        <!-- סרגל עליון עם כפתור שדרוג -->
         <div class="top-bar">
             <button class="pro-badge-btn" id="openProBtn">
                 <i class="fa-solid fa-crown"></i> שדרג ל-Pro
             </button>
         </div>
 
+        <!-- כותרת ראשית -->
         <header>
-            <div class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <h1>BG Remover Studio</h1>
-            <p>הסר רקע והוסף רקע חדש בלחיצת כפתור (אפשר גם ללחוץ Ctrl+V להדבקה)</p>
+            <div class="logo-icon">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <h1>הסרת רקע מתמונות בחינם</h1>
+            <p>העלה תמונה ותקבל תוצאה שקופה ומקצועית תוך שניות בודדות</p>
         </header>
 
-        <main class="upload-section">
-            <div class="drop-zone" id="dropZone">
-                <input type="file" id="imageInput" accept="image/*" hidden>
-                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                <p class="drop-title">גרור תמונה לכאן, לחץ לבחירה או לחץ <span class="highlight">Ctrl + V</span></p>
-                <p class="drop-sub">תומך ב-PNG, JPG, WEBP</p>
-            </div>
+        <!-- אזור העלאת התמונה -->
+        <div class="drop-zone" id="dropZone">
+            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+            <div class="drop-title">גרור ושחרר תמונה כאן או <span class="highlight">לחץ לבחירה</span></div>
+            <div class="drop-sub">תומך ב-PNG, JPG, WEBP (עד 10MB)</div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        </div>
 
-            <div class="preview-container">
-                <div class="image-box">
-                    <span class="badge">מקור</span>
-                    <img id="originalImage" src="" alt="תמונה מקורית" style="display:none;">
-                    <div class="placeholder-text" id="origPlaceholder">
-                        <i class="fa-regular fa-image"></i>
-                        <p>התמונה המקורית תופיע כאן</p>
-                    </div>
+        <!-- תצוגה מקדימה -->
+        <div class="preview-container">
+            <!-- תמונה מקורית -->
+            <div class="image-box">
+                <span class="badge">מקור</span>
+                <div class="placeholder-text" id="origPlaceholder">
+                    <i class="fa-regular fa-image"></i>
+                    <span>התמונה המקורית תופיע כאן</span>
                 </div>
+                <img id="originalImg" style="display: none;" alt="מקור">
+            </div>
 
-                <div class="image-box result-box" id="resultContainer">
-                    <span class="badge badge-success">תוצאה</span>
-                    <div id="loader" class="loader-wrapper" style="display:none;">
-                        <div class="spinner"></div>
-                        <p>מעבד את התמונה...</p>
-                    </div>
-                    <img id="resultImage" src="" alt="תוצאה" style="display:none;">
-                    <div class="placeholder-text" id="resultPlaceholder">
-                        <i class="fa-solid fa-sparkles"></i>
-                        <p>התוצאה ללא הרקע תופיע כאן</p>
-                    </div>
+            <!-- תוצאה -->
+            <div class="image-box result-box">
+                <span class="badge badge-success">ללא רקע</span>
+                <div class="placeholder-text" id="resultPlaceholder">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span>התוצאה תופיע כאן</span>
                 </div>
+                <img id="resultImg" style="display: none;" alt="תוצאה">
             </div>
+        </div>
 
-            <!-- מחליף רקעים -->
-            <div class="bg-picker-container" id="bgPickerSection" style="display: none;">
-                <h3><i class="fa-solid fa-palette"></i> בחר רקע חלופי לתמונה:</h3>
-                <div class="color-options">
-                    <button class="color-btn active" data-color="transparent" title="שקוף"></button>
-                    <button class="color-btn" data-color="#ffffff" style="background: #ffffff;" title="לבן"></button>
-                    <button class="color-btn" data-color="#000000" style="background: #000000;" title="שחור"></button>
-                    <button class="color-btn" data-color="#2563eb" style="background: #2563eb;" title="כחול"></button>
-                    <button class="color-btn" data-color="#10b981" style="background: #10b981;" title="ירוק"></button>
-                    <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" title="כתום"></button>
-                </div>
+        <!-- בחירת צבע רקע חלופי -->
+        <div class="bg-picker-container" id="bgPickerContainer" style="display: none;">
+            <span>בחר צבע רקע חדש (אופציונלי):</span>
+            <div class="color-options">
+                <button class="color-btn" style="background: transparent;" data-color="transparent" title="שקוף"></button>
+                <button class="color-btn" style="background: #ffffff;" data-color="#ffffff" title="לבן"></button>
+                <button class="color-btn" style="background: #000000;" data-color="#000000" title="שחור"></button>
+                <button class="color-btn" style="background: #2563eb;" data-color="#2563eb" title="כחול"></button>
+                <button class="color-btn" style="background: #10b981;" data-color="#10b981" title="ירוק"></button>
             </div>
+        </div>
 
-            <div class="actions">
-                <button id="removeBtn" class="btn btn-primary" disabled>
-                    <i class="fa-solid fa-scissors"></i> הסר רקע
-                </button>
-                
-                <!-- הורדה רגילה בחינם -->
-                <a id="downloadBtn" class="btn btn-success" style="display:none;">
-                    <i class="fa-solid fa-download"></i> הורדה רגילה (חינם)
-                </a>
-
-                <!-- הורדת HD נעולה ל-Pro -->
-                <button id="downloadHdBtn" class="btn btn-pro" style="display:none;">
-                    <i class="fa-solid fa-crown"></i> הורד ב-HD 4K
-                </button>
-
-                <button id="copyBtn" class="btn btn-secondary" style="display:none;">
-                    <i class="fa-regular fa-copy"></i> העתק ללוח
-                </button>
-            </div>
-        </main>
+        <!-- כפתורי פעולה -->
+        <div class="actions">
+            <button class="btn btn-primary" id="removeBgBtn" disabled>
+                <i class="fa-solid fa-scissors"></i> הסר רקע
+            </button>
+            <a id="downloadBtn" class="btn btn-success" style="display: none;" download="no-bg.png">
+                <i class="fa-solid fa-download"></i> הורד תמונה
+            </a>
+            <button class="btn btn-pro" id="proFeaturesBtn">
+                <i class="fa-solid fa-bolt"></i> איכות HD
+            </button>
+        </div>
     </div>
 
-    <!-- חלון שדרוג Pro Modal (מנוי לכל החיים ב-5 ש"ח) -->
+    <!-- פופאפ שדרוג Pro Modal -->
     <div class="modal-overlay" id="proModal" style="display: none;">
         <div class="modal-content">
             <button class="close-modal" id="closeProBtn">&times;</button>
-            
             <div class="modal-header">
-                <div class="crown-icon"><i class="fa-solid fa-crown"></i></div>
-                <h2>שדרג ל-<strong>Pro</strong></h2>
-                <p>שלם פעם אחת בלבד וקבל גישה מלאה לכל החיים!</p>
+                <i class="fa-solid fa-crown crown-icon"></i>
+                <h2>שדרג ל-<strong>Studio Pro</strong></h2>
+                <p>קבל גישה לכל הכלים המתקדמים וללא הגבלות</p>
             </div>
-
+            
             <div class="pro-plans single-plan">
-                <div class="plan-card featured">
-                    <div class="badge-featured">הצעה מיוחדת</div>
-                    <h3>גישה לכל החיים (Lifetime)</h3>
-                    <div class="price">₪5 <span>/ תשלום חד-פעמי</span></div>
+                <div class="plan-card">
+                    <span class="badge-featured">פופולרי ביותר</span>
+                    <h3>מנוי חודשי LITE</h3>
+                    <div class="price">₪19 <span>/ חודש</span></div>
                     <ul>
-                        <li><i class="fa-solid fa-check"></i> הסרות רקע ללא הגבלה לתמיד</li>
-                        <li><i class="fa-solid fa-check"></i> הורדות באיכות HD / 4K מקסימלית</li>
-                        <li><i class="fa-solid fa-check"></i> ללא מנוי חודשי וללא חסמים</li>
-                        <li><i class="fa-solid fa-check"></i> תמיכה במעבד תמונות מהיר</li>
+                        <li><i class="fa-solid fa-check"></i> הסרת רקע ללא הגבלה</li>
+                        <li><i class="fa-solid fa-check"></i> הורדה באיכות HD מלאה</li>
+                        <li><i class="fa-solid fa-check"></i> מעבד תמונות מהיר פי 3</li>
+                        <li><i class="fa-solid fa-check"></i> תמיכה בקבצים גדולי ממדים</li>
                     </ul>
-                    <button class="btn btn-buy btn-featured" onclick="alert('חיבור למערכת סליקה (Stripe / Bit)')">
-                        קנה עכשיו ב-₪5 בלבד
-                    </button>
+                    <button class="btn-buy">התחל ניסיון חינם</button>
                 </div>
             </div>
         </div>
