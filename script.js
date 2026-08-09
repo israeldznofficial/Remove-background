@@ -1,5 +1,5 @@
 // ==========================================
-// 1. הגדרת אלמנטים
+// 1. הגדרת אלמנטים מה-DOM
 // ==========================================
 const imageInput = document.getElementById('imageInput');
 const dropZone = document.getElementById('dropZone');
@@ -25,8 +25,8 @@ const promoInput = document.getElementById('promoCodeInput');
 const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
-// מפתח API עדכני
-const API_KEY = 'd9e03d98-3168-45e0-8278-8ba94a53018e';
+// מפתח ה-API החדש שלך מ-Remove.bg
+const API_KEY = 'VS1Nj55zAtnN2eJhFx5NLGQk';
 const PROMO_CODE = 'VIPISRAELDZN1';
 
 let selectedFile = null;
@@ -147,7 +147,7 @@ function handleFile(file) {
 }
 
 // ==========================================
-// 4. הסרת רקע (עם Fallback עמיד לקבצים מקומיים)
+// 4. הסרת רקע (עם ה-API החדש)
 // ==========================================
 if (removeBtn) {
     removeBtn.addEventListener('click', async () => {
@@ -163,41 +163,36 @@ if (removeBtn) {
         formData.append('size', 'auto');
 
         try {
-            // ניסיון ראשון: Remove.bg API
             const response = await fetch('https://api.remove.bg/v1.0/removebg', {
                 method: 'POST',
                 headers: { 'X-Api-Key': API_KEY },
                 body: formData
             });
 
-            if (!response.ok) throw new Error('RemoveBG API Failed');
+            if (!response.ok) throw new Error('API Error');
 
             processedBlob = await response.blob();
-            displaySuccessResult(processedBlob);
+            const url = URL.createObjectURL(processedBlob);
 
-        } catch (primaryErr) {
-            console.warn('Remove.bg נכשל, מנסה מנוע גיבוי חינמי...', primaryErr);
-
-            try {
-                // ניסיון שני: מנוע חינמי שרונדר ישירות מקובץ הקלט
-                const backupFormData = new FormData();
-                backupFormData.append('file', selectedFile);
-
-                const backupResponse = await fetch('https://clipdrop-api.co/remove-background/v1', {
-                    method: 'POST',
-                    headers: { 'x-api-key': '4d1b8243685c7f897746bc5e90ebaa81' },
-                    body: backupFormData
-                });
-
-                if (!backupResponse.ok) throw new Error('Backup Engine Failed');
-
-                processedBlob = await backupResponse.blob();
-                displaySuccessResult(processedBlob);
-
-            } catch (secondaryErr) {
-                alert('נגמרו הקרדיטים החינמיים בחשבון ה-API. מומלץ להירשם בחינם ל-Remove.bg ולהחליף את מפתח ה-API בקוד.');
-                if (resultPlaceholder) resultPlaceholder.style.display = 'block';
+            if (resultImage) {
+                resultImage.src = url;
+                resultImage.style.display = 'block';
             }
+
+            if (bgPickerSection) bgPickerSection.style.display = 'block';
+
+            if (downloadBtn) {
+                downloadBtn.href = url;
+                downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
+                downloadBtn.style.display = 'inline-flex';
+            }
+
+            if (downloadHdBtn) downloadHdBtn.style.display = 'inline-flex';
+            if (copyBtn) copyBtn.style.display = 'inline-flex';
+
+        } catch (err) {
+            alert('אירעה שגיאה בחיבור למנוע ה-AI. יש לוודא שהמפתח תקין.');
+            if (resultPlaceholder) resultPlaceholder.style.display = 'block';
         } finally {
             if (loader) loader.style.display = 'none';
             removeBtn.disabled = false;
@@ -205,24 +200,8 @@ if (removeBtn) {
     });
 }
 
-function displaySuccessResult(blob) {
-    const url = URL.createObjectURL(blob);
-    if (resultImage) {
-        resultImage.src = url;
-        resultImage.style.display = 'block';
-    }
-    if (bgPickerSection) bgPickerSection.style.display = 'block';
-    if (downloadBtn) {
-        downloadBtn.href = url;
-        downloadBtn.download = `no-bg-${selectedFile ? selectedFile.name.split('.')[0] : 'image'}.png`;
-        downloadBtn.style.display = 'inline-flex';
-    }
-    if (downloadHdBtn) downloadHdBtn.style.display = 'inline-flex';
-    if (copyBtn) copyBtn.style.display = 'inline-flex';
-}
-
 // ==========================================
-// 5. שינוי צבע והורדה
+// 5. שינוי צבע והורדת HD
 // ==========================================
 colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
