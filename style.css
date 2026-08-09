@@ -105,7 +105,7 @@ header p {
     transition: all 0.3s;
 }
 
-.drop-zone:hover {
+.drop-zone:hover, .drop-zone.drag-over {
     background-color: #dbeafe;
     border-color: var(--primary-hover);
 }
@@ -222,6 +222,11 @@ header p {
     cursor: pointer;
 }
 
+.color-btn.active {
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
 .actions {
     margin-top: 25px;
     display: flex;
@@ -306,7 +311,7 @@ header p {
 }
 
 /* =========================================
-   Modal Pop-up (שדרוג Pro)
+   Modal Pop-up (שדרוג Pro + הזנת קוד)
    ========================================= */
 
 .modal-overlay {
@@ -433,6 +438,28 @@ header p {
 
 .plan-card ul li i {
     color: #10b981;
+}
+
+/* שדה ה-VIP */
+.promo-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.promo-box input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    font-weight: bold;
+}
+
+.promo-msg {
+    font-size: 0.85rem;
+    margin-top: 8px;
+    font-weight: bold;
 }
 
 .btn-buy {
