@@ -43,7 +43,7 @@
                     <img id="originalImage" src="" alt="תמונה מקורית" style="display:none;">
                     <div class="placeholder-text" id="origPlaceholder">
                         <i class="fa-regular fa-image"></i>
-                        <p>התמונה המקורית תופיע כאן</p>
+                        <p>התמונה المקורית תופיע כאן</p>
                     </div>
                 </div>
 
@@ -84,7 +84,7 @@
                     <i class="fa-solid fa-download"></i> הורדה רגילה (חינם)
                 </a>
 
-                <!-- הורדת HD נעולה ל-Pro -->
+                <!-- הורדת HD נעולה ל-Pro / קוד קופון -->
                 <button id="downloadHdBtn" class="btn btn-pro" style="display:none;">
                     <i class="fa-solid fa-crown"></i> הורד ב-HD 4K
                 </button>
@@ -96,7 +96,7 @@
         </main>
     </div>
 
-    <!-- חלון שדרוג Pro Modal (מנוי לכל החיים ב-5 ש"ח) -->
+    <!-- חלון שדרוג Pro Modal (כולל הזנת קוד VIP) -->
     <div class="modal-overlay" id="proModal" style="display: none;">
         <div class="modal-content">
             <button class="close-modal" id="closeProBtn">&times;</button>
@@ -104,7 +104,7 @@
             <div class="modal-header">
                 <div class="crown-icon"><i class="fa-solid fa-crown"></i></div>
                 <h2>שדרג ל-<strong>Pro</strong></h2>
-                <p>שלם פעם אחת בלבד וקבל גישה מלאה לכל החיים!</p>
+                <p>שלם פעם אחת בלבד או הזינו קוד קופון VIP!</p>
             </div>
 
             <div class="pro-plans single-plan">
@@ -118,7 +118,15 @@
                         <li><i class="fa-solid fa-check"></i> ללא מנוי חודשי וללא חסמים</li>
                         <li><i class="fa-solid fa-check"></i> תמיכה במעבד תמונות מהיר</li>
                     </ul>
-                    <button class="btn btn-buy btn-featured" onclick="alert('חיבור למערכת סליקה (Stripe / Bit)')">
+
+                    <!-- אזור הזנת קוד VIP -->
+                    <div class="promo-box">
+                        <input type="text" id="promoCodeInput" placeholder="הכנס קוד VIP / קופון">
+                        <button id="applyCodeBtn" class="btn btn-secondary">הפעל</button>
+                    </div>
+                    <p id="promoMessage" class="promo-msg" style="display: none;"></p>
+
+                    <button class="btn btn-buy btn-featured" onclick="alert('חיבור למערכת סליקה (Stripe / Bit)')" style="margin-top: 15px;">
                         קנה עכשיו ב-₪5 בלבד
                     </button>
                 </div>
