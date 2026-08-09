@@ -25,12 +25,13 @@ const promoInput = document.getElementById('promoCodeInput');
 const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
-// מפתח API ותנאי VIP
+// הגדרות API וקוד שדרוג
 const API_KEY = 'VS1Nj55zAtnN2eJhFx5NLGQk';
 const PROMO_CODE = 'A34H21';
 
 let selectedFile = null;
 let processedBlob = null;
+let highResHdBlob = null; // קובץ HD/4K ברזולוציה מלאה
 
 // ==========================================
 // 2. ניהול VIP / Pro Status
@@ -58,9 +59,10 @@ window.addEventListener('click', (e) => {
 if (applyBtn) {
     applyBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        const code = promoInput ? promoInput.value.trim() : '';
+        const code = promoInput ? promoInput.value.trim().toUpperCase() : '';
+        const targetCode = PROMO_CODE.trim().toUpperCase();
 
-        if (code === PROMO_CODE) {
+        if (code === targetCode) {
             localStorage.setItem('isProUser', 'true');
             if (promoMsg) {
                 promoMsg.style.color = '#10b981';
@@ -127,6 +129,7 @@ document.addEventListener('paste', (e) => {
 function handleFile(file) {
     if (file && file.type.startsWith('image/')) {
         selectedFile = file;
+        highResHdBlob = null;
         const reader = new FileReader();
 
         reader.onload = (e) => {
@@ -151,7 +154,46 @@ function handleFile(file) {
 }
 
 // ==========================================
-// 4. הסרת רקע
+// 4. יצירת HD 4K ברזולוציה מקורית (Canvas Alpha Mask)
+// ==========================================
+function createFullHdImage(origImgSrc, lowResNoBgBlob) {
+    return new Promise((resolve, reject) => {
+        const origImg = new Image();
+        const noBgImg = new Image();
+
+        origImg.onload = () => {
+            noBgImg.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = origImg.naturalWidth;
+                canvas.height = origImg.naturalHeight;
+
+                // ציור התמונה המקורית ברזולוציה המלאה
+                ctx.drawImage(origImg, 0, 0, canvas.width, canvas.height);
+
+                // יצירת מסכת שקיפות מהתמונה ללא הרקע
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                tempCtx.drawImage(noBgImg, 0, 0, canvas.width, canvas.height);
+
+                ctx.globalCompositeOperation = 'destination-in';
+                ctx.drawImage(tempCanvas, 0, 0);
+
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/png');
+            };
+            noBgImg.src = URL.createObjectURL(lowResNoBgBlob);
+        };
+        origImg.src = origImgSrc;
+    });
+}
+
+// ==========================================
+// 5. הסרת רקע
 // ==========================================
 if (removeBtn) {
     removeBtn.addEventListener('click', async () => {
@@ -185,16 +227,18 @@ if (removeBtn) {
 
             if (bgPickerSection) bgPickerSection.style.display = 'block';
 
-            // הורדה רגילה באיכות רגילה (פתוח לכולם)
+            // 1. הורדה רגילה (איכות בסיסית)
             if (downloadBtn) {
                 downloadBtn.href = url;
                 downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
                 downloadBtn.style.display = 'inline-flex';
             }
 
-            // הצגת כפתור HD (הורדה תתאפשר רק בבדיקת Pro)
+            // 2. עיבוד HD/4K ברזולוציה מקורית
+            highResHdBlob = await createFullHdImage(originalImage.src, processedBlob);
+
             if (downloadHdBtn) {
-                downloadHdBtn.removeAttribute('href'); // מניעת הורדה ישירה
+                downloadHdBtn.removeAttribute('href');
                 downloadHdBtn.style.display = 'inline-flex';
             }
 
@@ -212,31 +256,30 @@ if (removeBtn) {
 }
 
 // ==========================================
-// 5. חסימת הורדת HD למשתמשים שאינם Pro
+// 6. חסימת הורדת HD/4K למשתמשים שאינם Pro
 // ==========================================
 if (downloadHdBtn) {
     downloadHdBtn.addEventListener('click', (e) => {
         e.preventDefault();
         
         if (checkProStatus()) {
-            // אם המשתמש הוא Pro - מורידים את הקובץ
-            if (processedBlob) {
+            const blobToDownload = highResHdBlob || processedBlob;
+            if (blobToDownload) {
                 const a = document.createElement('a');
-                a.href = URL.createObjectURL(processedBlob);
-                a.download = `hd-4k-${selectedFile ? selectedFile.name : 'image.png'}`;
+                a.href = URL.createObjectURL(blobToDownload);
+                a.download = `hd-4k-${selectedFile ? selectedFile.name.split('.')[0] : 'image'}.png`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
             }
         } else {
-            // אם המשתמש אינו Pro - פותחים את חלון השדרוג
             if (proModal) proModal.style.display = 'flex';
         }
     });
 }
 
 // ==========================================
-// 6. שינוי רקע
+// 7. שינוי רקע
 // ==========================================
 colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
