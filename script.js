@@ -25,7 +25,7 @@ const promoInput = document.getElementById('promoCodeInput');
 const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
-// מפתח ה-API החדש שלך מ-Remove.bg
+// מפתח API ותנאי VIP
 const API_KEY = 'VS1Nj55zAtnN2eJhFx5NLGQk';
 const PROMO_CODE = 'VIPISRAELDZN1';
 
@@ -37,9 +37,13 @@ let processedBlob = null;
 // ==========================================
 function checkProStatus() {
     const isPro = localStorage.getItem('isProUser') === 'true';
+    
     if (isPro) {
         if (openProBtn) openProBtn.innerHTML = '<i class="fa-solid fa-crown"></i> מנוי Pro פעיל';
-        if (downloadHdBtn) downloadHdBtn.innerHTML = '<i class="fa-solid fa-download"></i> הורד ב-HD 4K (פתוח)';
+        if (downloadHdBtn) downloadHdBtn.innerHTML = '<i class="fa-solid fa-crown"></i> הורד ב-HD 4K (פתוח)';
+    } else {
+        if (openProBtn) openProBtn.innerHTML = '<i class="fa-solid fa-crown"></i> שדרג ל-Pro';
+        if (downloadHdBtn) downloadHdBtn.innerHTML = '<i class="fa-solid fa-lock"></i> הורד ב-HD 4K (נעול)';
     }
     return isPro;
 }
@@ -147,7 +151,7 @@ function handleFile(file) {
 }
 
 // ==========================================
-// 4. הסרת רקע (עם ה-API החדש)
+// 4. הסרת רקע
 // ==========================================
 if (removeBtn) {
     removeBtn.addEventListener('click', async () => {
@@ -181,13 +185,19 @@ if (removeBtn) {
 
             if (bgPickerSection) bgPickerSection.style.display = 'block';
 
+            // הורדה רגילה באיכות רגילה (פתוח לכולם)
             if (downloadBtn) {
                 downloadBtn.href = url;
                 downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
                 downloadBtn.style.display = 'inline-flex';
             }
 
-            if (downloadHdBtn) downloadHdBtn.style.display = 'inline-flex';
+            // הצגת כפתור HD (הורדה תתאפשר רק בבדיקת Pro)
+            if (downloadHdBtn) {
+                downloadHdBtn.removeAttribute('href'); // מניעת הורדה ישירה
+                downloadHdBtn.style.display = 'inline-flex';
+            }
+
             if (copyBtn) copyBtn.style.display = 'inline-flex';
 
         } catch (err) {
@@ -196,12 +206,37 @@ if (removeBtn) {
         } finally {
             if (loader) loader.style.display = 'none';
             removeBtn.disabled = false;
+            checkProStatus();
         }
     });
 }
 
 // ==========================================
-// 5. שינוי צבע והורדת HD
+// 5. חסימת הורדת HD למשתמשים שאינם Pro
+// ==========================================
+if (downloadHdBtn) {
+    downloadHdBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        if (checkProStatus()) {
+            // אם המשתמש הוא Pro - מורידים את הקובץ
+            if (processedBlob) {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(processedBlob);
+                a.download = `hd-4k-${selectedFile ? selectedFile.name : 'image.png'}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        } else {
+            // אם המשתמש אינו Pro - פותחים את חלון השדרוג
+            if (proModal) proModal.style.display = 'flex';
+        }
+    });
+}
+
+// ==========================================
+// 6. שינוי רקע
 // ==========================================
 colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -218,20 +253,5 @@ colorBtns.forEach(btn => {
         }
     });
 });
-
-if (downloadHdBtn) {
-    downloadHdBtn.addEventListener('click', () => {
-        if (checkProStatus()) {
-            if (processedBlob) {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(processedBlob);
-                a.download = `hd-${selectedFile ? selectedFile.name : 'image.png'}`;
-                a.click();
-            }
-        } else {
-            if (proModal) proModal.style.display = 'flex';
-        }
-    });
-}
 
 checkProStatus();
