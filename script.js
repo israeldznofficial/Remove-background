@@ -27,7 +27,7 @@ const promoMsg = document.getElementById('promoMessage');
 
 // מפתח API ותנאי VIP
 const API_KEY = 'VS1Nj55zAtnN2eJhFx5NLGQk';
-const PROMO_CODE = 'VIPISRAELDZN1';
+const PROMO_CODE = 'A34H21';
 
 let selectedFile = null;
 let processedBlob = null;
