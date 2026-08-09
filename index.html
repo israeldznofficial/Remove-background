@@ -3,132 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BG Remover Studio Pro</title>
-    <link rel="stylesheet" href="style.css">
+    <title>מסיק רקע AI | Israel DZN</title>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- אלמנטים צפים ברקע -->
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-    </div>
-
-    <div class="container">
-        <!-- כפתור שדרוג בראש הדף -->
-        <div class="top-bar">
-            <button class="pro-badge-btn" id="openProBtn">
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Israel DZN <strong>Background Remover</strong></span>
+        </div>
+        <div class="nav-actions">
+            <button id="openProBtn" class="pro-badge">
                 <i class="fa-solid fa-crown"></i> שדרג ל-Pro
             </button>
         </div>
+    </header>
 
-        <header>
-            <div class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <h1>BG Remover Studio</h1>
-            <p>הסר רקע והוסף רקע חדש בלחיצת כפתור (אפשר גם ללחוץ Ctrl+V להדבקה)</p>
-        </header>
+    <!-- Main Container -->
+    <main class="container">
+        
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1>הסרת רקע מתמונות <span>בלחיצת כפתור</span></h1>
+            <p>העלה תמונה, קבל רקע שקוף באיכות גבוהה תוך שניות בחינם לחלוטין!</p>
+        </section>
 
-        <main class="upload-section">
+        <!-- Upload & Dropzone Area -->
+        <section class="upload-section">
             <div class="drop-zone" id="dropZone">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <h3>גרור לכאן תמונה או <span>לחץ לבחירה</span></h3>
+                <p>תומך בפורמטים JPG, PNG, WEBP (או הדבק מהלוח בעזרת Ctrl+V)</p>
                 <input type="file" id="imageInput" accept="image/*" hidden>
-                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                <p class="drop-title">גרור תמונה לכאן, לחץ לבחירה או לחץ <span class="highlight">Ctrl + V</span></p>
-                <p class="drop-sub">תומך ב-PNG, JPG, WEBP</p>
             </div>
+        </section>
 
-            <div class="preview-container">
-                <div class="image-box">
-                    <span class="badge">מקור</span>
-                    <img id="originalImage" src="" alt="תמונה מקורית" style="display:none;">
-                    <div class="placeholder-text" id="origPlaceholder">
+        <!-- Processing Controls -->
+        <div class="action-bar">
+            <button id="removeBtn" class="btn primary-btn" disabled>
+                <i class="fa-solid fa-bolt"></i> הסר רקע
+            </button>
+        </div>
+
+        <!-- Preview & Results Grid -->
+        <section class="preview-grid">
+            
+            <!-- Original Image Box -->
+            <div class="preview-box">
+                <h4>תמונה מקורית</h4>
+                <div class="image-wrapper">
+                    <div class="placeholder" id="origPlaceholder">
                         <i class="fa-regular fa-image"></i>
-                        <p>התמונה المקורית תופיע כאן</p>
+                        <p>התמונה שתעלה תופיע כאן</p>
                     </div>
+                    <img id="originalImage" src="" alt="תמונה מקורית" style="display: none;">
                 </div>
+            </div>
 
-                <div class="image-box result-box" id="resultContainer">
-                    <span class="badge badge-success">תוצאה</span>
-                    <div id="loader" class="loader-wrapper" style="display:none;">
-                        <div class="spinner"></div>
-                        <p>מעבד את התמונה...</p>
-                    </div>
-                    <img id="resultImage" src="" alt="תוצאה" style="display:none;">
-                    <div class="placeholder-text" id="resultPlaceholder">
+            <!-- Result Image Box -->
+            <div class="preview-box">
+                <h4>תוצאה שקופה</h4>
+                <div class="image-wrapper result-box" id="resultContainer">
+                    <div class="placeholder" id="resultPlaceholder">
                         <i class="fa-solid fa-sparkles"></i>
-                        <p>התוצאה ללא הרקע תופיע כאן</p>
+                        <p>התוצאה תופיע כאן</p>
+                    </div>
+
+                    <!-- Loader -->
+                    <div class="loader-overlay" id="loader" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>מעבד ומסיר רקע...</p>
+                    </div>
+
+                    <img id="resultImage" src="" alt="תוצאה ללא רקע" style="display: none;">
+                </div>
+
+                <!-- Background Color Switcher -->
+                <div class="bg-picker" id="bgPickerSection" style="display: none;">
+                    <span>צבע רקע לתצוגה:</span>
+                    <div class="color-options">
+                        <button class="color-btn active" data-color="transparent" title="שקוף"></button>
+                        <button class="color-btn" data-color="#ffffff" style="background: #ffffff;" title="לבן"></button>
+                        <button class="color-btn" data-color="#000000" style="background: #000000;" title="שחור"></button>
+                        <button class="color-btn" data-color="#3b82f6" style="background: #3b82f6;" title="כחול"></button>
+                        <button class="color-btn" data-color="#10b981" style="background: #10b981;" title="ירוק"></button>
                     </div>
                 </div>
-            </div>
 
-            <!-- מחליף רקעים -->
-            <div class="bg-picker-container" id="bgPickerSection" style="display: none;">
-                <h3><i class="fa-solid fa-palette"></i> בחר רקע חלופי לתמונה:</h3>
-                <div class="color-options">
-                    <button class="color-btn active" data-color="transparent" title="שקוף"></button>
-                    <button class="color-btn" data-color="#ffffff" style="background: #ffffff;" title="לבן"></button>
-                    <button class="color-btn" data-color="#000000" style="background: #000000;" title="שחור"></button>
-                    <button class="color-btn" data-color="#2563eb" style="background: #2563eb;" title="כחול"></button>
-                    <button class="color-btn" data-color="#10b981" style="background: #10b981;" title="ירוק"></button>
-                    <button class="color-btn" data-color="#f59e0b" style="background: #f59e0b;" title="כתום"></button>
+                <!-- Download & Actions -->
+                <div class="result-actions">
+                    <a id="downloadBtn" class="btn success-btn" style="display: none;">
+                        <i class="fa-solid fa-download"></i> הורד באיכות רגילה
+                    </a>
+                    
+                    <button id="downloadHdBtn" class="btn pro-btn" style="display: none;">
+                        <i class="fa-solid fa-lock"></i> הורד ב-HD 4K
+                    </button>
+
+                    <button id="copyBtn" class="btn secondary-btn" style="display: none;">
+                        <i class="fa-regular fa-copy"></i> העתק תמונה
+                    </button>
                 </div>
             </div>
 
-            <div class="actions">
-                <button id="removeBtn" class="btn btn-primary" disabled>
-                    <i class="fa-solid fa-scissors"></i> הסר רקע
-                </button>
+        </section>
+    </main>
+
+    <!-- Modal Pro & Upgrade -->
+    <div class="modal-overlay" id="proModal" style="display: none;">
+        <div class="modal-card">
+            <button class="close-btn" id="closeProBtn">&times;</button>
+            <div class="modal-header">
+                <i class="fa-solid fa-crown modal-icon"></i>
+                <h2>שדרג ל-<span>Pro</span></h2>
+                <p>פתח גישה להורדות ברזולוציית HD ו-4K מקסימלית!</p>
+            </div>
+            
+            <div class="pricing-card">
+                <div class="badge">הצעה מיוחדת</div>
+                <h3>גישה לכל החיים (Lifetime)</h3>
+                <div class="price">₪5 <span>/ תשלום חד-פעמי</span></div>
                 
-                <!-- הורדה רגילה בחינם -->
-                <a id="downloadBtn" class="btn btn-success" style="display:none;">
-                    <i class="fa-solid fa-download"></i> הורדה רגילה (חינם)
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> הסרות רקע ללא הגבלה לתמיד</li>
+                    <li><i class="fa-solid fa-check"></i> הורדות באיכות HD / 4K מקסימלית</li>
+                    <li><i class="fa-solid fa-check"></i> ללא מנוי חודשי וללא חסמים</li>
+                    <li><i class="fa-solid fa-check"></i> תמיכה במעבד תמונות מהיר</li>
+                </ul>
+
+                <!-- Discord Ticket Purchase Link -->
+                <a href="https://discord.gg/israel-dzn" target="_blank" class="btn buy-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: #5865F2; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px;">
+                    <i class="fa-brands fa-discord" style="font-size: 1.2rem;"></i> פתח טיקט לרכישה בדיסקורד
                 </a>
 
-                <!-- הורדת HD נעולה ל-Pro / קוד קופון -->
-                <button id="downloadHdBtn" class="btn btn-pro" style="display:none;">
-                    <i class="fa-solid fa-crown"></i> הורד ב-HD 4K
-                </button>
-
-                <button id="copyBtn" class="btn btn-secondary" style="display:none;">
-                    <i class="fa-regular fa-copy"></i> העתק ללוח
-                </button>
-            </div>
-        </main>
-    </div>
-
-    <!-- חלון שדרוג Pro Modal (כולל הזנת קוד VIP) -->
-    <div class="modal-overlay" id="proModal" style="display: none;">
-        <div class="modal-content">
-            <button class="close-modal" id="closeProBtn">&times;</button>
-            
-            <div class="modal-header">
-                <div class="crown-icon"><i class="fa-solid fa-crown"></i></div>
-                <h2>שדרג ל-<strong>Pro</strong></h2>
-                <p>שלם פעם אחת בלבד או הזינו קוד קופון VIP!</p>
-            </div>
-
-            <div class="pro-plans single-plan">
-                <div class="plan-card featured">
-                    <div class="badge-featured">הצעה מיוחדת</div>
-                    <h3>גישה לכל החיים (Lifetime)</h3>
-                    <div class="price">₪5 <span>/ תשלום חד-פעמי</span></div>
-                    <ul>
-                        <li><i class="fa-solid fa-check"></i> הסרות רקע ללא הגבלה לתמיד</li>
-                        <li><i class="fa-solid fa-check"></i> הורדות באיכות HD / 4K מקסימלית</li>
-                        <li><i class="fa-solid fa-check"></i> ללא מנוי חודשי וללא חסמים</li>
-                        <li><i class="fa-solid fa-check"></i> תמיכה במעבד תמונות מהיר</li>
-                    </ul>
-
-                    <!-- אזור הזנת קוד VIP -->
-                    <div class="promo-box">
-                        <input type="text" id="promoCodeInput" placeholder="הכנס קוד VIP / קופון">
-                        <button id="applyCodeBtn" class="btn btn-secondary">הפעל</button>
+                <!-- Promo Code Section -->
+                <div class="promo-box">
+                    <p style="font-size: 0.9rem; margin-bottom: 8px; color: #aaa;">יש לך קוד VIP שקיבלת בדיסקורד?</p>
+                    <div class="input-group">
+                        <input type="text" id="promoCodeInput" placeholder="הזן קוד קופון/VIP">
+                        <button id="applyCodeBtn" class="btn">הפעל</button>
                     </div>
                     <p id="promoMessage" class="promo-msg" style="display: none;"></p>
-
-                    <button class="btn btn-buy btn-featured" onclick="alert('חיבור למערכת סליקה (Stripe / Bit)')" style="margin-top: 15px;">
-                        קנה עכשיו ב-₪5 בלבד
-                    </button>
                 </div>
             </div>
         </div>
