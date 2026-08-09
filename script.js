@@ -1,3 +1,6 @@
+// ==========================================
+// 1. הגדרת אלמנטים
+// ==========================================
 const imageInput = document.getElementById('imageInput');
 const dropZone = document.getElementById('dropZone');
 const originalImage = document.getElementById('originalImage');
@@ -13,22 +16,23 @@ const resultPlaceholder = document.getElementById('resultPlaceholder');
 const bgPickerSection = document.getElementById('bgPickerSection');
 const colorBtns = document.querySelectorAll('.color-btn');
 
-// אלמנטים של Modal Pro וקוד VIP
+// Modal Pro & VIP
 const proModal = document.getElementById('proModal');
 const openProBtn = document.getElementById('openProBtn');
 const closeProBtn = document.getElementById('closeProBtn');
+
 const promoInput = document.getElementById('promoCodeInput');
 const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
-const API_KEY = 'AbN3eMM4pZzE3b2VrBir4vBb';
+const API_KEY = 'd9e03d98-3168-45e0-8278-8ba94a53018e';
 const PROMO_CODE = 'VIPISRAELDZN1';
 
 let selectedFile = null;
 let processedBlob = null;
 
 // ==========================================
-// 1. בדיקת סטטוס Pro וניהול Modal
+// 2. ניהול VIP / Pro Status
 // ==========================================
 function checkProStatus() {
     const isPro = localStorage.getItem('isProUser') === 'true';
@@ -46,43 +50,39 @@ window.addEventListener('click', (e) => {
     if (e.target === proModal) proModal.style.display = 'none';
 });
 
-// הפעלת קוד VIP
+// מאזין ללחיצה על כפתור "הפעל" הקוד
 if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-        const code = promoInput.value.trim();
+    applyBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // מניעת רענון טופס
+        const code = promoInput ? promoInput.value.trim() : '';
+
         if (code === PROMO_CODE) {
             localStorage.setItem('isProUser', 'true');
-            promoMsg.style.color = '#10b981';
-            promoMsg.innerText = 'קוד תקין! שודרגת בהצלחה ל-Pro!';
-            promoMsg.style.display = 'block';
+            if (promoMsg) {
+                promoMsg.style.color = '#10b981';
+                promoMsg.innerText = 'קוד תקין! שודרגת בהצלחה ל-Pro!';
+                promoMsg.style.display = 'block';
+            } else {
+                alert('קוד תקין! שודרגת בהצלחה ל-Pro!');
+            }
             checkProStatus();
             setTimeout(() => {
-                proModal.style.display = 'none';
-            }, 1500);
+                if (proModal) proModal.style.display = 'none';
+            }, 1200);
         } else {
-            promoMsg.style.color = '#ef4444';
-            promoMsg.innerText = 'קוד שגוי, נסה שוב.';
-            promoMsg.style.display = 'block';
-        }
-    });
-}
-
-// בלחיצה על הורדת HD
-if (downloadHdBtn) {
-    downloadHdBtn.addEventListener('click', () => {
-        if (checkProStatus() && processedBlob) {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(processedBlob);
-            a.download = `no-bg-hd-${selectedFile ? selectedFile.name.split('.')[0] : 'image'}.png`;
-            a.click();
-        } else {
-            proModal.style.display = 'flex';
+            if (promoMsg) {
+                promoMsg.style.color = '#ef4444';
+                promoMsg.innerText = 'קוד שגוי, נסה שוב.';
+                promoMsg.style.display = 'block';
+            } else {
+                alert('קוד שגוי, נסה שוב.');
+            }
         }
     });
 }
 
 // ==========================================
-// 2. גרירה, העלאה והדבקת תמונות
+// 3. טעינת תמונה והעלאה
 // ==========================================
 if (dropZone) {
     dropZone.addEventListener('click', () => imageInput.click());
@@ -107,6 +107,12 @@ if (dropZone) {
     });
 }
 
+if (imageInput) {
+    imageInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+}
+
 document.addEventListener('paste', (e) => {
     const items = e.clipboardData.items;
     for (let item of items) {
@@ -118,113 +124,103 @@ document.addEventListener('paste', (e) => {
     }
 });
 
-if (imageInput) {
-    imageInput.addEventListener('change', (e) => {
-        if (e.target.files.length) handleFile(e.target.files[0]);
-    });
-}
-
 function handleFile(file) {
     if (file && file.type.startsWith('image/')) {
         selectedFile = file;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            originalImage.src = e.target.result;
-            originalImage.style.display = 'block';
-            origPlaceholder.style.display = 'none';
 
-            resultImage.style.display = 'none';
-            resultPlaceholder.style.display = 'block';
-            bgPickerSection.style.display = 'none';
-            downloadBtn.style.display = 'none';
-            downloadHdBtn.style.display = 'none';
-            copyBtn.style.display = 'none';
-            removeBtn.disabled = false;
+        reader.onload = (e) => {
+            if (originalImage) {
+                originalImage.src = e.target.result;
+                originalImage.style.display = 'block';
+            }
+            if (origPlaceholder) origPlaceholder.style.display = 'none';
+
+            if (resultImage) resultImage.style.display = 'none';
+            if (resultPlaceholder) resultPlaceholder.style.display = 'block';
+            if (bgPickerSection) bgPickerSection.style.display = 'none';
+            if (downloadBtn) downloadBtn.style.display = 'none';
+            if (downloadHdBtn) downloadHdBtn.style.display = 'none';
+            if (copyBtn) copyBtn.style.display = 'none';
+
+            if (removeBtn) removeBtn.disabled = false;
         };
+
         reader.readAsDataURL(file);
     }
 }
 
 // ==========================================
-// 3. הסרת רקע
+// 4. הסרת רקע
 // ==========================================
-removeBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
+if (removeBtn) {
+    removeBtn.addEventListener('click', async () => {
+        if (!selectedFile) return;
 
-    loader.style.display = 'flex';
-    resultPlaceholder.style.display = 'none';
-    resultImage.style.display = 'none';
-    removeBtn.disabled = true;
+        if (loader) loader.style.display = 'flex';
+        if (resultPlaceholder) resultPlaceholder.style.display = 'none';
+        if (resultImage) resultImage.style.display = 'none';
+        removeBtn.disabled = true;
 
-    const formData = new FormData();
-    formData.append('image_file', selectedFile);
-    formData.append('size', 'auto');
-
-    try {
-        const response = await fetch('https://api.remove.bg/v1.0/removebg', {
-            method: 'POST',
-            headers: { 'X-Api-Key': API_KEY },
-            body: formData
-        });
-
-        if (!response.ok) throw new Error('שגיאה בעיבוד');
-
-        processedBlob = await response.blob();
-        const url = URL.createObjectURL(processedBlob);
-
-        resultImage.src = url;
-        resultImage.style.display = 'block';
-
-        bgPickerSection.style.display = 'block';
-        downloadBtn.href = url;
-        downloadBtn.download = 'no-bg.png';
-        downloadBtn.style.display = 'inline-flex';
-        downloadHdBtn.style.display = 'inline-flex';
-        copyBtn.style.display = 'inline-flex';
-    } catch (error) {
-        alert('אירעה שגיאה בעת הסרת הרקע.');
-        resultPlaceholder.style.display = 'block';
-    } finally {
-        loader.style.display = 'none';
-        removeBtn.disabled = false;
-    }
-});
-
-// ==========================================
-// 4. שינוי צבע ברקע
-// ==========================================
-colorBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        colorBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const color = btn.getAttribute('data-color');
-
-        if (color === 'transparent') {
-            resultContainer.style.backgroundColor = '';
-            resultContainer.classList.add('result-box');
-        } else {
-            resultContainer.classList.remove('result-box');
-            resultContainer.style.backgroundColor = color;
-        }
-    });
-});
-
-// ==========================================
-// 5. העתקה ללוח
-// ==========================================
-if (copyBtn) {
-    copyBtn.addEventListener('click', async () => {
-        if (!processedBlob) return;
         try {
-            await navigator.clipboard.write([
-                new ClipboardItem({ [processedBlob.type]: processedBlob })
-            ]);
-            alert('התמונה הועתקה ללוח!');
+            const formData = new FormData();
+            formData.append('image_file', selectedFile);
+            formData.append('size', 'auto');
+
+            const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+                method: 'POST',
+                headers: { 'X-Api-Key': API_KEY },
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('API Error');
+
+            processedBlob = await response.blob();
+            const url = URL.createObjectURL(processedBlob);
+
+            if (resultImage) {
+                resultImage.src = url;
+                resultImage.style.display = 'block';
+            }
+
+            if (bgPickerSection) bgPickerSection.style.display = 'block';
+
+            if (downloadBtn) {
+                downloadBtn.href = url;
+                downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
+                downloadBtn.style.display = 'inline-flex';
+            }
+
+            if (downloadHdBtn) downloadHdBtn.style.display = 'inline-flex';
+            if (copyBtn) copyBtn.style.display = 'inline-flex';
+
         } catch (err) {
-            alert('לא ניתן להעתיק את התמונה בדפדפן זה.');
+            alert('אירעה שגיאה בחיבור למנוע ה-AI.');
+            if (resultPlaceholder) resultPlaceholder.style.display = 'block';
+        } finally {
+            if (loader) loader.style.display = 'none';
+            removeBtn.disabled = false;
         }
     });
 }
 
-// הפעלה ראשונית לבדיקת סטטוס Pro
+// ==========================================
+// 5. הורדת HD
+// ==========================================
+if (downloadHdBtn) {
+    downloadHdBtn.addEventListener('click', () => {
+        if (checkProStatus()) {
+            if (processedBlob) {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(processedBlob);
+                a.download = `hd-${selectedFile ? selectedFile.name : 'image.png'}`;
+                a.click();
+            }
+        } else {
+            if (proModal) proModal.style.display = 'flex';
+        }
+    });
+}
+
+// בדיקת מנוי בטעינה
 checkProStatus();
