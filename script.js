@@ -13,48 +13,100 @@ const resultPlaceholder = document.getElementById('resultPlaceholder');
 const bgPickerSection = document.getElementById('bgPickerSection');
 const colorBtns = document.querySelectorAll('.color-btn');
 
-// אלמנטים של Modal Pro
+// אלמנטים של Modal Pro וקוד VIP
 const proModal = document.getElementById('proModal');
 const openProBtn = document.getElementById('openProBtn');
 const closeProBtn = document.getElementById('closeProBtn');
+const promoInput = document.getElementById('promoCodeInput');
+const applyBtn = document.getElementById('applyCodeBtn');
+const promoMsg = document.getElementById('promoMessage');
 
 const API_KEY = 'AbN3eMM4pZzE3b2VrBir4vBb';
+const PROMO_CODE = 'VIPISRAELDZN1';
 
 let selectedFile = null;
 let processedBlob = null;
 
-// פתיחה/סגירה של חלון Pro
-openProBtn.addEventListener('click', () => proModal.style.display = 'flex');
-downloadHdBtn.addEventListener('click', () => proModal.style.display = 'flex');
-closeProBtn.addEventListener('click', () => proModal.style.display = 'none');
+// ==========================================
+// 1. בדיקת סטטוס Pro וניהול Modal
+// ==========================================
+function checkProStatus() {
+    const isPro = localStorage.getItem('isProUser') === 'true';
+    if (isPro) {
+        if (openProBtn) openProBtn.innerHTML = '<i class="fa-solid fa-crown"></i> מנוי Pro פעיל';
+        if (downloadHdBtn) downloadHdBtn.innerHTML = '<i class="fa-solid fa-download"></i> הורד ב-HD 4K (פתוח)';
+    }
+    return isPro;
+}
+
+if (openProBtn) openProBtn.addEventListener('click', () => proModal.style.display = 'flex');
+if (closeProBtn) closeProBtn.addEventListener('click', () => proModal.style.display = 'none');
 
 window.addEventListener('click', (e) => {
     if (e.target === proModal) proModal.style.display = 'none';
 });
 
-// גרירת קבצים
-dropZone.addEventListener('click', () => imageInput.click());
-
-['dragenter', 'dragover'].forEach(name => {
-    dropZone.addEventListener(name, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
+// הפעלת קוד VIP
+if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+        const code = promoInput.value.trim();
+        if (code === PROMO_CODE) {
+            localStorage.setItem('isProUser', 'true');
+            promoMsg.style.color = '#10b981';
+            promoMsg.innerText = 'קוד תקין! שודרגת בהצלחה ל-Pro!';
+            promoMsg.style.display = 'block';
+            checkProStatus();
+            setTimeout(() => {
+                proModal.style.display = 'none';
+            }, 1500);
+        } else {
+            promoMsg.style.color = '#ef4444';
+            promoMsg.innerText = 'קוד שגוי, נסה שוב.';
+            promoMsg.style.display = 'block';
+        }
     });
-});
+}
 
-['dragleave', 'drop'].forEach(name => {
-    dropZone.addEventListener(name, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
+// בלחיצה על הורדת HD
+if (downloadHdBtn) {
+    downloadHdBtn.addEventListener('click', () => {
+        if (checkProStatus() && processedBlob) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(processedBlob);
+            a.download = `no-bg-hd-${selectedFile ? selectedFile.name.split('.')[0] : 'image'}.png`;
+            a.click();
+        } else {
+            proModal.style.display = 'flex';
+        }
     });
-});
+}
 
-dropZone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files.length) handleFile(files[0]);
-});
+// ==========================================
+// 2. גרירה, העלאה והדבקת תמונות
+// ==========================================
+if (dropZone) {
+    dropZone.addEventListener('click', () => imageInput.click());
 
-// Ctrl+V להדבקה
+    ['dragenter', 'dragover'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length) handleFile(files[0]);
+    });
+}
+
 document.addEventListener('paste', (e) => {
     const items = e.clipboardData.items;
     for (let item of items) {
@@ -66,9 +118,11 @@ document.addEventListener('paste', (e) => {
     }
 });
 
-imageInput.addEventListener('change', (e) => {
-    handleFile(e.target.files[0]);
-});
+if (imageInput) {
+    imageInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+}
 
 function handleFile(file) {
     if (file && file.type.startsWith('image/')) {
@@ -91,6 +145,9 @@ function handleFile(file) {
     }
 }
 
+// ==========================================
+// 3. הסרת רקע
+// ==========================================
 removeBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
@@ -133,7 +190,9 @@ removeBtn.addEventListener('click', async () => {
     }
 });
 
-// שינוי צבע
+// ==========================================
+// 4. שינוי צבע ברקע
+// ==========================================
 colorBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         colorBtns.forEach(b => b.classList.remove('active'));
@@ -150,15 +209,22 @@ colorBtns.forEach(btn => {
     });
 });
 
-// העתקה ללוח
-copyBtn.addEventListener('click', async () => {
-    if (!processedBlob) return;
-    try {
-        await navigator.clipboard.write([
-            new ClipboardItem({ [processedBlob.type]: processedBlob })
-        ]);
-        alert('התמונה הועתקה ללוח!');
-    } catch (err) {
-        alert('לא ניתן להעתיק את התמונה בדפדפן זה.');
-    }
-});
+// ==========================================
+// 5. העתקה ללוח
+// ==========================================
+if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+        if (!processedBlob) return;
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({ [processedBlob.type]: processedBlob })
+            ]);
+            alert('התמונה הועתקה ללוח!');
+        } catch (err) {
+            alert('לא ניתן להעתיק את התמונה בדפדפן זה.');
+        }
+    });
+}
+
+// הפעלה ראשונית לבדיקת סטטוס Pro
+checkProStatus();
