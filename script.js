@@ -27,7 +27,7 @@ const promoMsg = document.getElementById('promoMessage');
 
 // הגדרות API וקוד שדרוג
 const API_KEY = 'VS1Nj55zAtnN2eJhFx5NLGQk';
-const PROMO_CODE = 'HA245FA';
+const PROMO_CODE = 'HABA3664';
 
 let selectedFile = null;
 let processedBlob = null;
