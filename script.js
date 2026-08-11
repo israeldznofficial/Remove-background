@@ -26,7 +26,7 @@ const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
 // הגדרות API וקוד שדרוג
-const API_KEY = 'VS1Nj55zAtnN2eJhFx5NLGQk';
+const API_KEY = 'zgrwqEjL3CrSgUxTfuh8nKwu';
 const PROMO_CODE = 'BAE52';
 
 let selectedFile = null;
