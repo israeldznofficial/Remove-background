@@ -27,7 +27,7 @@ const promoMsg = document.getElementById('promoMessage');
 
 // הגדרות API וקוד שדרוג
 const API_KEY = 'zgrwqEjL3CrSgUxTfuh8nKwu';
-const PROMO_CODE = 'BAE52';
+const PROMO_CODE = NKA353';
 
 let selectedFile = null;
 let processedBlob = null;
