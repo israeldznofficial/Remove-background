@@ -26,7 +26,7 @@ const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
 // הגדרות API וקוד שדרוג
-const API_KEY = 'zgrwqEjL3CrSgUxTfuh8nKwu'; // שים כאן את המפתח הפעיל מ-Remove.bg
+const API_KEY = '3UhHhq4uXJ4jNH7KMngajRnd'; // המפתח החדש שלך
 const PROMO_CODE = 'NKA353';
 
 let selectedFile = null;
