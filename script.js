@@ -26,7 +26,7 @@ const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
 // הגדרות API וקוד שדרוג
-const API_KEY = '3UhHhq4uXJ4jNH7KMngajRnd'; // המפתח החדש שלך
+const API_KEY = 'Y4xeGRDR9Bmvu7M1ENP9z9Fo'; // המפתח החדש שלך
 const PROMO_CODE = 'NKA353';
 
 let selectedFile = null;
