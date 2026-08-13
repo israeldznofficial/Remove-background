@@ -25,13 +25,11 @@ const promoInput = document.getElementById('promoCodeInput');
 const applyBtn = document.getElementById('applyCodeBtn');
 const promoMsg = document.getElementById('promoMessage');
 
-// הגדרות API וקוד שדרוג
-const API_KEY = 'zgrwqEjL3CrSgUxTfuh8nKwu';
-const PROMO_CODE = 'NKA353'; // <-- תוקן: התווסף גרש פותח
+// קוד שדרוג Pro
+const PROMO_CODE = 'NKA353';
 
 let selectedFile = null;
 let processedBlob = null;
-let highResHdBlob = null; // קובץ HD/4K ברזולוציה מלאה
 
 // ==========================================
 // 2. ניהול VIP / Pro Status
@@ -129,7 +127,6 @@ document.addEventListener('paste', (e) => {
 function handleFile(file) {
     if (file && file.type.startsWith('image/')) {
         selectedFile = file;
-        highResHdBlob = null;
         const reader = new FileReader();
 
         reader.onload = (e) => {
@@ -154,46 +151,7 @@ function handleFile(file) {
 }
 
 // ==========================================
-// 4. יצירת HD 4K ברזולוציה מקורית (Canvas Alpha Mask)
-// ==========================================
-function createFullHdImage(origImgSrc, lowResNoBgBlob) {
-    return new Promise((resolve, reject) => {
-        const origImg = new Image();
-        const noBgImg = new Image();
-
-        origImg.onload = () => {
-            noBgImg.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                canvas.width = origImg.naturalWidth;
-                canvas.height = origImg.naturalHeight;
-
-                // ציור התמונה המקורית ברזולוציה המלאה
-                ctx.drawImage(origImg, 0, 0, canvas.width, canvas.height);
-
-                // יצירת מסכת שקיפות מהתמונה ללא הרקע
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
-                tempCtx.drawImage(noBgImg, 0, 0, canvas.width, canvas.height);
-
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(tempCanvas, 0, 0);
-
-                canvas.toBlob((blob) => {
-                    resolve(blob);
-                }, 'image/png');
-            };
-            noBgImg.src = URL.createObjectURL(lowResNoBgBlob);
-        };
-        origImg.src = origImgSrc;
-    });
-}
-
-// ==========================================
-// 5. הסרת רקע
+// 4. הסרת רקע חינמית לתמיד (ברזולוציה מלאה)
 // ==========================================
 if (removeBtn) {
     removeBtn.addEventListener('click', async () => {
@@ -204,20 +162,9 @@ if (removeBtn) {
         if (resultImage) resultImage.style.display = 'none';
         removeBtn.disabled = true;
 
-        const formData = new FormData();
-        formData.append('image_file', selectedFile);
-        formData.append('size', 'auto');
-
         try {
-            const response = await fetch('https://api.remove.bg/v1.0/removebg', {
-                method: 'POST',
-                headers: { 'X-Api-Key': API_KEY },
-                body: formData
-            });
-
-            if (!response.ok) throw new Error('API Error');
-
-            processedBlob = await response.blob();
+            // שימוש במנוע ה-AI החינמי ללא תלות ב-API Key
+            processedBlob = await imglyRemoveBackground(selectedFile);
             const url = URL.createObjectURL(processedBlob);
 
             if (resultImage) {
@@ -227,16 +174,14 @@ if (removeBtn) {
 
             if (bgPickerSection) bgPickerSection.style.display = 'block';
 
-            // 1. הורדה רגילה (איכות בסיסית)
+            // הורדה רגילה
             if (downloadBtn) {
                 downloadBtn.href = url;
                 downloadBtn.download = `no-bg-${selectedFile.name.split('.')[0]}.png`;
                 downloadBtn.style.display = 'inline-flex';
             }
 
-            // 2. עיבוד HD/4K ברזולוציה מקורית
-            highResHdBlob = await createFullHdImage(originalImage.src, processedBlob);
-
+            // הורדת HD/4K (מוגנת ל-Pro)
             if (downloadHdBtn) {
                 downloadHdBtn.removeAttribute('href');
                 downloadHdBtn.style.display = 'inline-flex';
@@ -245,7 +190,8 @@ if (removeBtn) {
             if (copyBtn) copyBtn.style.display = 'inline-flex';
 
         } catch (err) {
-            alert('אירעה שגיאה בחיבור למנוע ה-AI. יש לוודא שהמפתח תקין.');
+            console.error(err);
+            alert('אירעה שגיאה בשימוש במנוע הסרת הרקע.');
             if (resultPlaceholder) resultPlaceholder.style.display = 'block';
         } finally {
             if (loader) loader.style.display = 'none';
@@ -256,17 +202,16 @@ if (removeBtn) {
 }
 
 // ==========================================
-// 6. חסימת הורדת HD/4K למשתמשים שאינם Pro
+// 5. הורדת HD/4K
 // ==========================================
 if (downloadHdBtn) {
     downloadHdBtn.addEventListener('click', (e) => {
         e.preventDefault();
         
         if (checkProStatus()) {
-            const blobToDownload = highResHdBlob || processedBlob;
-            if (blobToDownload) {
+            if (processedBlob) {
                 const a = document.createElement('a');
-                a.href = URL.createObjectURL(blobToDownload);
+                a.href = URL.createObjectURL(processedBlob);
                 a.download = `hd-4k-${selectedFile ? selectedFile.name.split('.')[0] : 'image'}.png`;
                 document.body.appendChild(a);
                 a.click();
@@ -274,6 +219,24 @@ if (downloadHdBtn) {
             }
         } else {
             if (proModal) proModal.style.display = 'flex';
+        }
+    });
+}
+
+// ==========================================
+// 6. העתקה ללוח
+// ==========================================
+if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+        if (!processedBlob) return;
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({ [processedBlob.type]: processedBlob })
+            ]);
+            alert('התמונה הועתקה ללוח בהצלחה!');
+        } catch (err) {
+            console.error(err);
+            alert('לא ניתן להעתיק את התמונה בדפדפן זה.');
         }
     });
 }
