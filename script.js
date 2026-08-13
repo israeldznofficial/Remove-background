@@ -27,7 +27,7 @@ const promoMsg = document.getElementById('promoMessage');
 
 // הגדרות API וקוד שדרוג
 const API_KEY = 'zgrwqEjL3CrSgUxTfuh8nKwu';
-const PROMO_CODE = NKA353';
+const PROMO_CODE = 'NKA353'; // <-- תוקן: התווסף גרש פותח
 
 let selectedFile = null;
 let processedBlob = null;
@@ -288,11 +288,15 @@ colorBtns.forEach(btn => {
         const color = btn.getAttribute('data-color');
 
         if (color === 'transparent') {
-            resultContainer.style.backgroundColor = '';
-            resultContainer.classList.add('result-box');
+            if (resultContainer) {
+                resultContainer.style.backgroundColor = '';
+                resultContainer.classList.add('result-box');
+            }
         } else {
-            resultContainer.classList.remove('result-box');
-            resultContainer.style.backgroundColor = color;
+            if (resultContainer) {
+                resultContainer.classList.remove('result-box');
+                resultContainer.style.backgroundColor = color;
+            }
         }
     });
 });
